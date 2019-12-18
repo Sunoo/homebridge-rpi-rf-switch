@@ -7,7 +7,10 @@
     "url": "git://github.com/Sunoo/homebridge-rpi-rf-switch.git"
   },
   "keywords": [
-    "homebridge-plugin"
+    "homebridge-plugin",
+    "rpi-rf",
+    "433",
+    "433Mhz"
   ],
   "author": "David Maher",
   "license": "ISC",
