@@ -29,7 +29,7 @@ rfSwitchPlatform.prototype.configureAccessory = function (accessory) {
   this.accessories[accessory.context.name] = accessory;
 }
 
-// Method to setup accesories from config.json
+// Method to setup accessories from config.json
 rfSwitchPlatform.prototype.didFinishLaunching = function () {
   // Add or update accessories defined in config.json
   for (var i in this.switches) this.addAccessory(this.switches[i]);
@@ -48,9 +48,13 @@ rfSwitchPlatform.prototype.addAccessory = function (data) {
   // Retrieve accessory from cache
   var accessory = this.accessories[data.name];
 
+  data.manufacturer = "Sunoo";
+  data.model = "rpi-rf";
+  data.serial = data.on_cmd.toString() + ":" + data.off_cmd.toString();
+
   if (!accessory) {
     // Setup accessory as SWITCH (8) category.
-    var uuid = UUIDGen.generate(data.name);
+    var uuid = UUIDGen.generate(data.serial);
     accessory = new Accessory(data.name, uuid, 8);
 
     // Setup HomeKit switch service
@@ -67,23 +71,6 @@ rfSwitchPlatform.prototype.addAccessory = function (data) {
 
     // Store accessory in cache
     this.accessories[data.name] = accessory;
-  }
-
-  // Confirm variable type
-  data.manufacturer = "Sunoo";
-  data.model = "rpi-rf";
-  data.serial = data.on_cmd.toString() + ":" + data.off_cmd.toString();
-
-  // Store and initialize variables into context
-  var cache = accessory.context;
-  cache.name = data.name;
-  cache.on_cmd = data.on_cmd;
-  cache.off_cmd = data.off_cmd;
-  cache.manufacturer = data.manufacturer;
-  cache.model = data.model;
-  cache.serial = data.serial;
-  if (cache.state === undefined) {
-    cache.state = false;
   }
 
   // Retrieve initial state
@@ -146,7 +133,6 @@ rfSwitchPlatform.prototype.getPowerState = function (thisSwitch, callback) {
     // Check state if polling is disabled
     this.getState(thisSwitch, function (error, state) {
       // Update state if command exists
-      if (!error) self.log(thisSwitch.name + " is " + (thisSwitch.state ? "on." : "off."));
       callback(error, thisSwitch.state);
     });
 }
