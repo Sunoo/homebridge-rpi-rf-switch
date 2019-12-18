@@ -1,5 +1,5 @@
 # homebridge-rpi-rf-switch
-CMD Plugin for [HomeBridge](https://github.com/nfarina/homebridge) (API 2.0)
+Rpi-RF Plugin for [Homebridge](https://github.com/nfarina/homebridge)
 
 ### What this plugin does
 This plugin allows you to send RF commands via HomeKit.
