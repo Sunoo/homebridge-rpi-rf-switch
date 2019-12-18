@@ -9,9 +9,11 @@ This plugin allows you to send RF commands via HomeKit.
 2. `off_cmd`: This is the command issued when the switch is turned OFF.
 
 # Installation
-1. Install homebridge using `npm install -g homebridge`.
-2. Install this plugin using `npm install -g homebridge-rpi-rf-switch`.
-3. Update your configuration file. See configuration sample below.
+1. Install pip using `apt install python3-pip`.
+2. Install rpi-rf using `pip3 install rpi-rf`.
+3. Install homebridge using `npm install -g homebridge`.
+4. Install this plugin using `npm install -g homebridge-rpi-rf-switch`.
+5. Update your configuration file. See configuration sample below.
 
 # Configuration
 Edit your `config.json` accordingly. Configuration sample:
