@@ -3,8 +3,7 @@ var Accessory, Service, Characteristic, UUIDGen;
 
 // command queue
 let todoList = [];
-let timer = null;
-let timeout = 200; // timeout between sending rc commands (in ms)
+let running = false;
 
 module.exports = function(homebridge) {
     Accessory = homebridge.platformAccessory;
@@ -39,11 +38,11 @@ function toggleNext() {
 
         // set timer for next todo
         if (todoList.length > 0) {
-            timer = setTimeout(toggleNext, timeout);
+            toggleNext();
         } else {
-            timer = null;
+            running = false;
         }
-        
+
         callback();
     });
 }
@@ -187,8 +186,9 @@ rfSwitchPlatform.prototype.setPowerState = function(thisSwitch, state, callback)
         'state': state,
         'self': self
     });
-    if (timer === null) {
-        timer = setTimeout(toggleNext, timeout);
+    if (!running) {
+        running = true;
+        toggleNext();
     }
 }
 
