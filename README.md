@@ -44,5 +44,3 @@ Edit your `config.json` accordingly. Configuration sample:
 | \|- off_cmd        | Command to turn off your device.                      | Yes      |
 
 \*Changing the switch `name` in `config.json` will create a new switch instead of renaming the existing one in HomeKit. It's strongly recommended that you rename the switch using a HomeKit app only.
-
-\*\*Command execution is assumed 'Successful' if timeout occures.

@@ -1,6 +1,11 @@
 var exec = require("child_process").exec;
 var Accessory, Service, Characteristic, UUIDGen;
 
+// command queue
+let todoList = [];
+let timer = null;
+let timeout = 200; // timeout between sending rc commands (in ms)
+
 module.exports = function(homebridge) {
     Accessory = homebridge.platformAccessory;
     Service = homebridge.hap.Service;
@@ -8,6 +13,39 @@ module.exports = function(homebridge) {
     UUIDGen = homebridge.hap.uuid;
 
     homebridge.registerPlatform("homebridge-rpi-rf-switch", "rfSwitch", rfSwitchPlatform, true);
+}
+
+function toggleNext() {
+    // get next todo item
+    let todoItem = todoList.shift();
+    let callback = todoItem['callback'];
+    let thisSwitch = todoItem['thisSwitch'];
+    let state = todoItem['state'];
+    let self = todoItem['self'];
+
+    var cmd = state ? thisSwitch.on_cmd : thisSwitch.off_cmd;
+
+    // Execute command to set state
+    exec("/usr/local/bin/rpi-rf_send " + cmd, function(error, stdout, stderr) {
+        // Error detection
+        if (error && (state !== thisSwitch.state)) {
+            self.log("Failed to turn " + (state ? "on " : "off ") + thisSwitch.name);
+            self.log(stderr);
+        } else {
+            if (cmd) self.log(thisSwitch.name + " is turned " + (state ? "on." : "off."));
+            thisSwitch.state = state;
+            error = null;
+        }
+
+        // set timer for next todo
+        if (todoList.length > 0) {
+            timer = setTimeout(toggleNext, timeout);
+        } else {
+            timer = null;
+        }
+        
+        callback();
+    });
 }
 
 function rfSwitchPlatform(log, config, api) {
@@ -143,33 +181,15 @@ rfSwitchPlatform.prototype.getPowerState = function(thisSwitch, callback) {
 rfSwitchPlatform.prototype.setPowerState = function(thisSwitch, state, callback) {
     var self = this;
 
-    var cmd = state ? thisSwitch.on_cmd : thisSwitch.off_cmd;
-    var tout = null;
-
-    // Execute command to set state
-    exec("/usr/local/bin/rpi-rf_send " + cmd, function(error, stdout, stderr) {
-        // Error detection
-        if (error && (state !== thisSwitch.state)) {
-            self.log("Failed to turn " + (state ? "on " : "off ") + thisSwitch.name);
-            self.log(stderr);
-        } else {
-            if (cmd) self.log(thisSwitch.name + " is turned " + (state ? "on." : "off."));
-            thisSwitch.state = state;
-            error = null;
-        }
-
-        if (tout) {
-            clearTimeout(tout);
-            callback(error);
-        }
+    todoList.push({
+        'callback': callback,
+        'thisSwitch': thisSwitch,
+        'state': state,
+        'self': self
     });
-
-    // Allow 5s to set state but otherwise assumes success
-    tout = setTimeout(function() {
-        tout = null;
-        self.log("Turning " + (state ? "on " : "off ") + thisSwitch.name + " took too long [5s], assuming success.");
-        callback();
-    }, 5 * 1000);
+    if (timer === null) {
+        timer = setTimeout(toggleNext, timeout);
+    }
 }
 
 // Method to handle identify request
