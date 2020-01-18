@@ -1,5 +1,5 @@
 # homebridge-rpi-rf-switch
-Rpi-RF Plugin for [Homebridge](https://github.com/nfarina/homebridge)
+[rpi-rf](https://pypi.org/project/rpi-rf/) Plugin for [Homebridge](https://github.com/nfarina/homebridge)
 
 ### What this plugin does
 This plugin allows you to send RF commands via HomeKit.
@@ -39,8 +39,6 @@ Edit your `config.json` accordingly. Configuration sample:
 | platform           | Must always be `rfSwitch`.                            | Yes      |
 | name               | For logging purposes.                                 | No       |
 | switches           | Array of switch config (multiple switches supported). | Yes      |
-| \|- name\*         | Name of your device.                                  | Yes      |
+| \|- name           | Name of your device.                                  | Yes      |
 | \|- on_cmd         | Command to turn on your device.                       | Yes      |
 | \|- off_cmd        | Command to turn off your device.                      | Yes      |
-
-\*Changing the switch `name` in `config.json` will create a new switch instead of renaming the existing one in HomeKit. It's strongly recommended that you rename the switch using a HomeKit app only.
