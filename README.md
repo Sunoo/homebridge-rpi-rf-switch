@@ -33,6 +33,7 @@ Edit your `config.json` accordingly. Configuration sample:
 | platform           | Must always be `rfSwitch`.                                                   | Yes      |
 | name               | For logging purposes.                                                        | No       |
 | gpio               | The BCM number of the pin your RF transmitter is connected to. (Default: 17) | No       |
+| repeat             | RF code repeat cycles. (Default: 10)                                         | No       |
 | libpython          | **See note below.**                                                          | No       |
 | devices            | Array of switch config (multiple switches supported).                        | Yes      |
 | \|- name           | Name of your device.                                                         | Yes      |
@@ -41,7 +42,6 @@ Edit your `config.json` accordingly. Configuration sample:
 | \|- pulselength    | RF code pulse length. (Default: 350)                                         | No       |
 | \|- protocol       | RF code protocol. (Default: 1)                                               | No       |
 | \|- codelength     | RF code length. (Default: 24)                                                | No       |
-| \|- repeat         | RF code repeat cycles. (Default: 10)                                         | No       |
 
 ### libpython Setting
 If you are running a version of Python other than 3.7, you may need to update this value. You probably won't want to touch this unless you encounter problems. Here is how to find that value.

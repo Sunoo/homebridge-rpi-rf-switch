@@ -1,5 +1,4 @@
-const pynode = require('pynode-fix')
-const util = require('util');
+const python = require("@sunookitsune/node-calls-python").interpreter;
 var Accessory, Service, Characteristic, UUIDGen;
 
 module.exports = function(homebridge) {
@@ -16,6 +15,7 @@ function rfSwitchPlatform(log, config, api) {
     this.config = config;
 
     this.gpio = config.gpio || 17;
+    this.repeat = config.repeat || 10;
     this.libpython = config.libpython || 'python3.7m';
 
     this.accessories = [];
@@ -23,11 +23,11 @@ function rfSwitchPlatform(log, config, api) {
     this.commandQueue = [];
     this.transmitting = false;
 
-    pynode.dlOpen('lib' + this.libpython + '.so')
-    pynode.startInterpreter();
-    pynode.appendSysPath(__dirname);
-    pynode.openFile('sendRf');
-    this.callAsync = util.promisify(pynode.call);
+    python.fixlink('lib' + this.libpython + '.so');
+
+    var rpiRf = python.importSync('rpi_rf');
+    this.rfDevice = python.createSync(rpiRf, 'RFDevice', this.gpio, 1, null, this.repeat, 24);
+    python.callSync(this.rfDevice, 'enable_tx');
 
     if (api) {
         this.api = api;
@@ -59,19 +59,6 @@ rfSwitchPlatform.prototype.didFinishLaunching = function() {
 rfSwitchPlatform.prototype.addAccessory = function(data) {
     this.log("Initializing platform accessory '" + data.name + "'...");
     data.serial = data.on_code + ":" + data.off_code;
-
-    if (!data.pulselength) {
-        data.pulselength = -1;
-    }
-    if (!data.protocol) {
-        data.protocol = -1;
-    }
-    if (!data.length) {
-        data.codelength = -1;
-    }
-    if (!data.repeat) {
-        data.repeat = 10;
-    }
 
     var accessory;
     this.accessories.forEach(cachedAccessory => {
@@ -149,10 +136,12 @@ rfSwitchPlatform.prototype.nextCommand = function() {
     let state = todoItem['state'];
     let callback = todoItem['callback'];
 
-    var code = state ? accessory.context.on_code : accessory.context.off_code;
+    let code = state ? accessory.context.on_code : accessory.context.off_code;
 
-    this.callAsync('send', code, this.gpio, accessory.context.pulselength, accessory.context.protocol,
-            accessory.context.codelength, accessory.context.repeat)
+    let handleError = function(error) {}
+
+    python.call(this.rfDevice, "tx_code", code, accessory.context.protocol,
+            accessory.context.pulselength, accessory.context.codelength)
         .then(result => {
             this.log(accessory.context.name + " is turned " + (state ? "on." : "off."))
             accessory.context.state = state;
@@ -165,9 +154,9 @@ rfSwitchPlatform.prototype.nextCommand = function() {
 
             callback();
         })
-        .catch(err => {
+        .catch(error => {
             this.log("Failed to turn " + (state ? "on " : "off ") + accessory.context.name);
-            this.log(err);
+            this.log(error);
         });
 }
 
