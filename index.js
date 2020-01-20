@@ -1,4 +1,4 @@
-var exec = require("child_process").exec;
+const pynode = require('pynode-fix')
 var Accessory, Service, Characteristic, UUIDGen;
 
 module.exports = function(homebridge) {
@@ -12,15 +12,20 @@ module.exports = function(homebridge) {
 
 function rfSwitchPlatform(log, config, api) {
     this.log = log;
-    this.config = config || {
-        "platform": "rfSwitch"
-    };
-    this.switches = this.config.switches || [];
+    this.config = config;
 
-    this.accessories = {};
+    this.gpio = config.gpio || 17;
+    this.libpython = config.libpython || 'python3.7m';
+
+    this.accessories = [];
 
     this.commandQueue = [];
     this.transmitting = false;
+
+    pynode.dlOpen('lib' + this.libpython + '.so')
+    pynode.startInterpreter();
+    pynode.appendSysPath(__dirname);
+    pynode.openFile('sendRf');
 
     if (api) {
         this.api = api;
@@ -30,30 +35,54 @@ function rfSwitchPlatform(log, config, api) {
 
 rfSwitchPlatform.prototype.configureAccessory = function(accessory) {
     this.setService(accessory);
-    this.accessories[accessory.context.name] = accessory;
+    this.accessories.push(accessory);
 }
 
 rfSwitchPlatform.prototype.didFinishLaunching = function() {
-    for (var i in this.switches) this.addAccessory(this.switches[i]);
+    var serials = [];
+    this.config.devices.forEach(device => {
+        this.addAccessory(device);
+        serials.push(device.on_code + ':' + device.off_code);
+    });
 
-    for (var name in this.accessories) {
-        var accessory = this.accessories[name];
-        if (!accessory.reachable) {
-            this.removeAccessory(accessory);
+    var badAccessories = [];
+    this.accessories.forEach(cachedAccessory => {
+        if (!serials.includes(cachedAccessory.context.serial)) {
+            badAccessories.push(cachedAccessory);
         }
-    }
+    });
+    this.removeAccessories(badAccessories);
 }
 
 rfSwitchPlatform.prototype.addAccessory = function(data) {
     this.log("Initializing platform accessory '" + data.name + "'...");
+    data.serial = data.on_code + ":" + data.off_code;
 
-    var accessory = this.accessories[data.name];
+    if (!data.pulselength) {
+        data.pulselength = -1;
+    }
+    if (!data.protocol) {
+        data.protocol = -1;
+    }
+    if (!data.length) {
+        data.codelength = -1;
+    }
+    if (!data.repeat) {
+        data.repeat = 10;
+    }
 
-    data.serial = data.on_cmd.toString() + ":" + data.off_cmd.toString();
+    var accessory;
+    this.accessories.forEach(cachedAccessory => {
+        if (cachedAccessory.context.serial == data.serial) {
+            accessory = cachedAccessory;
+        }
+    });
 
     if (!accessory) {
         var uuid = UUIDGen.generate(data.serial);
-        accessory = new Accessory(data.name, uuid, 8);
+        accessory = new Accessory(data.name, uuid);
+
+        accessory.context = data;
 
         accessory.addService(Service.Switch, data.name);
 
@@ -63,27 +92,28 @@ rfSwitchPlatform.prototype.addAccessory = function(data) {
 
         this.api.registerPlatformAccessories("homebridge-rpi-rf-switch", "rfSwitch", [accessory]);
 
-        this.accessories[data.name] = accessory;
+        this.accessories.push(accessory);
+    } else {
+        accessory.context = data;
     }
 
     this.getInitState(accessory);
 }
 
-rfSwitchPlatform.prototype.removeAccessory = function(accessory) {
-    if (accessory) {
-        var name = accessory.context.name;
-        this.log(name + " is removed from HomeBridge.");
-        this.api.unregisterPlatformAccessories("homebridge-rpi-rf-switch", "rfSwitch", [accessory]);
-        delete this.accessories[name];
-    }
+rfSwitchPlatform.prototype.removeAccessories = function(accessories) {
+    accessories.forEach(accessory => {
+        this.log(accessory.context.name + " is removed from HomeBridge.");
+        this.api.unregisterPlatformAccessories("homebridge-honeywell-leak", "honeywellLeak", [accessory]);
+        this.accessories.splice(this.accessories.indexOf(accessory), 1);
+    });
 }
 
 rfSwitchPlatform.prototype.setService = function(accessory) {
     accessory.getService(Service.Switch)
         .getCharacteristic(Characteristic.On)
-        .on('set', this.setPowerState.bind(this, accessory.context));
+        .on('set', this.setPowerState.bind(this, accessory));
 
-    accessory.on('identify', this.identify.bind(this, accessory.context));
+    accessory.on('identify', this.identify.bind(this, accessory));
 }
 
 rfSwitchPlatform.prototype.getInitState = function(accessory) {
@@ -99,11 +129,11 @@ rfSwitchPlatform.prototype.getInitState = function(accessory) {
     accessory.updateReachability(true);
 }
 
-rfSwitchPlatform.prototype.setPowerState = function(thisSwitch, state, callback) {
+rfSwitchPlatform.prototype.setPowerState = function(accessory, state, callback) {
     this.commandQueue.push({
-        'callback': callback,
-        'thisSwitch': thisSwitch,
-        'state': state
+        'accessory': accessory,
+        'state': state,
+        'callback': callback
     });
     if (!this.transmitting) {
         this.transmitting = true;
@@ -113,35 +143,37 @@ rfSwitchPlatform.prototype.setPowerState = function(thisSwitch, state, callback)
 
 rfSwitchPlatform.prototype.nextCommand = function() {
     let todoItem = this.commandQueue.shift();
-    let callback = todoItem['callback'];
-    let thisSwitch = todoItem['thisSwitch'];
+    let accessory = todoItem['accessory'];
     let state = todoItem['state'];
+    let callback = todoItem['callback'];
 
-    var cmd = state ? thisSwitch.on_cmd : thisSwitch.off_cmd;
+    var code = state ? accessory.context.on_code : accessory.context.off_code;
 
-    exec("/usr/local/bin/rpi-rf_send " + cmd, function(error, stdout, stderr) {
-        if (error && (state !== thisSwitch.state)) {
-            this.log("Failed to turn " + (state ? "on " : "off ") + thisSwitch.name);
-            this.log(stderr);
-        } else {
-            if (cmd) {
-                this.log(thisSwitch.name + " is turned " + (state ? "on." : "off."))
-            };
-            thisSwitch.state = state;
-            error = null;
-        }
+    new Promise((resolve, reject) => {
+            pynode.call('send', code, this.gpio, accessory.context.pulselength, accessory.context.protocol,
+                accessory.context.codelength, accessory.context.repeat, (err, result) => {
+                    if (err) reject(err);
+                    resolve(result);
+                })
+        }).then(result => {
+            this.log(accessory.context.name + " is turned " + (state ? "on." : "off."))
+            accessory.context.state = state;
 
-        if (this.commandQueue.length > 0) {
-            this.nextCommand.bind(this)();
-        } else {
-            this.transmitting = false;
-        }
+            if (this.commandQueue.length > 0) {
+                this.nextCommand.bind(this)();
+            } else {
+                this.transmitting = false;
+            }
 
-        callback();
-    }.bind(this));
+            callback();
+        })
+        .catch(err => {
+            this.log("Failed to turn " + (state ? "on " : "off ") + accessory.context.name);
+            this.log(err);
+        });
 }
 
 rfSwitchPlatform.prototype.identify = function(thisSwitch, paired, callback) {
-    this.log(thisSwitch.name + "identify requested!");
+    this.log(thisSwitch.context.name + "identify requested!");
     callback();
 }
