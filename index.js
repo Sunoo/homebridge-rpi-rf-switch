@@ -1,4 +1,5 @@
 const pynode = require('pynode-fix')
+const util = require('util');
 var Accessory, Service, Characteristic, UUIDGen;
 
 module.exports = function(homebridge) {
@@ -26,6 +27,7 @@ function rfSwitchPlatform(log, config, api) {
     pynode.startInterpreter();
     pynode.appendSysPath(__dirname);
     pynode.openFile('sendRf');
+    this.callAsync = util.promisify(pynode.call);
 
     if (api) {
         this.api = api;
@@ -149,13 +151,9 @@ rfSwitchPlatform.prototype.nextCommand = function() {
 
     var code = state ? accessory.context.on_code : accessory.context.off_code;
 
-    new Promise((resolve, reject) => {
-            pynode.call('send', code, this.gpio, accessory.context.pulselength, accessory.context.protocol,
-                accessory.context.codelength, accessory.context.repeat, (err, result) => {
-                    if (err) reject(err);
-                    resolve(result);
-                })
-        }).then(result => {
+    this.callAsync('send', code, this.gpio, accessory.context.pulselength, accessory.context.protocol,
+            accessory.context.codelength, accessory.context.repeat)
+        .then(result => {
             this.log(accessory.context.name + " is turned " + (state ? "on." : "off."))
             accessory.context.state = state;
 
