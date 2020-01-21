@@ -1,4 +1,4 @@
-const python = require("@sunookitsune/node-calls-python").interpreter;
+const python = require("node-calls-python").interpreter;
 var Accessory, Service, Characteristic, UUIDGen;
 
 module.exports = function(homebridge) {
