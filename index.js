@@ -111,10 +111,6 @@ rfSwitchPlatform.prototype.getInitState = function(accessory) {
         .setCharacteristic(Characteristic.Model, "rpi-rf")
         .setCharacteristic(Characteristic.SerialNumber, accessory.context.serial);
 
-    accessory.getService(Service.Switch)
-        .getCharacteristic(Characteristic.On)
-        .getValue();
-
     accessory.updateReachability(true);
 }
 
