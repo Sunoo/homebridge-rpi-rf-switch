@@ -16,7 +16,7 @@ Edit your `config.json` accordingly. Configuration sample:
 "platforms": [{
     "platform": "rfSwitch",
     "name": "RF Switch",
-    "switches": [{
+    "devices": [{
         "name" : "Outlet 1",
         "on_code": 999988851,
         "off_code": 999989622
