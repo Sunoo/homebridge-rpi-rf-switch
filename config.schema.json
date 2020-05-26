@@ -1,0 +1,87 @@
+{
+    "pluginAlias": "rfSwitch",
+    "pluginType": "platform",
+    "singular": true,
+    "headerDisplay": "[rpi-rf](https://pypi.org/project/rpi-rf/) Plugin for [Homebridge](https://github.com/nfarina/homebridge).",
+    "footerDisplay": "Raise [Issues](https://github.com/Sunoo/homebridge-rpi-rf-switch/issues) or submit [Pull Requests](https://github.com/Sunoo/homebridge-rpi-rf-switch/pulls) on [Project Page](https://github.com/Sunoo/homebridge-rpi-rf-switch).",
+    "schema": {
+        "type": "object",
+        "properties": {
+            "name": {
+                "title": "Name",
+                "type": "string",
+                "required": true,
+                "default": "RF Switch",
+                "description": "A unique name for the accessory. It will be used as the accessory name in HomeKit."
+            },
+            "gpio": {
+                "title": "GPIO Pin",
+                "type": "integer",
+                "placeholder": 17,
+                "description": "The BCM number of the pin your RF transmitter is connected to."
+            },
+            "repeat": {
+                "title": "Repeat Cycles",
+                "type": "integer",
+                "placeholder": 10,
+                "description": "RF code repeat cycles."
+            },
+            "libpython": {
+                "title": "libpython Version",
+                "type": "string",
+                "placeholder": "python3.7m",
+                "description": "See readme for more information."
+            },
+            "devices": {
+                "title": "Devices",
+                "type": "array",
+                "required": true,
+                "minLength": 1,
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "name": {
+                            "title": "Name",
+                            "type": "string",
+                            "required": true,
+                            "placeholder": "Outlet 1",
+                            "description": "Name of your device."
+                        },
+                        "on_code": {
+                            "title": "On Code",
+                            "type": "integer",
+                            "required": true,
+                            "placeholder": 999988851,
+                            "description": "RF code to turn on your device."
+                        },
+                        "off_code": {
+                            "title": "Off Code",
+                            "type": "integer",
+                            "required": true,
+                            "placeholder": 999989622,
+                            "description": "RF code to turn off your device."
+                        },
+                        "pulselength": {
+                            "title": "Pulse Length",
+                            "type": "integer",
+                            "placeholder": 350,
+                            "description": "RF code pulse length."
+                        },
+                        "protocol": {
+                            "title": "Protocol",
+                            "type": "integer",
+                            "placeholder": 1,
+                            "description": "RF code protocol."
+                        },
+                        "codelength": {
+                            "title": "Code Length",
+                            "type": "integer",
+                            "placeholder": 24,
+                            "description": "RF code length."
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
