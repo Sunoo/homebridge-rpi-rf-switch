@@ -92,7 +92,7 @@ rfSwitchPlatform.prototype.addAccessory = function(data) {
 rfSwitchPlatform.prototype.removeAccessories = function(accessories) {
     accessories.forEach(accessory => {
         this.log(accessory.context.name + " is removed from HomeBridge.");
-        this.api.unregisterPlatformAccessories("homebridge-honeywell-leak", "honeywellLeak", [accessory]);
+        this.api.unregisterPlatformAccessories("homebridge-rpi-rf-switch", "rfSwitch", [accessory]);
         this.accessories.splice(this.accessories.indexOf(accessory), 1);
     });
 }
