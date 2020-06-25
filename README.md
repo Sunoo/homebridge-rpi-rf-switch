@@ -34,7 +34,6 @@ Edit your `config.json` accordingly. Configuration sample:
 | name               | For logging purposes.                                                        | No       |
 | gpio               | The BCM number of the pin your RF transmitter is connected to. (Default: 17) | No       |
 | repeat             | RF code repeat cycles. (Default: 10)                                         | No       |
-| libpython          | **See note below.**                                                          | No       |
 | devices            | Array of switch config (multiple switches supported).                        | Yes      |
 | \|- name           | Name of your device.                                                         | Yes      |
 | \|- on_code        | RF code to turn on your device.                                              | Yes      |
@@ -42,12 +41,6 @@ Edit your `config.json` accordingly. Configuration sample:
 | \|- pulselength    | RF code pulse length. (Default: 350)                                         | No       |
 | \|- protocol       | RF code protocol. (Default: 1)                                               | No       |
 | \|- codelength     | RF code length. (Default: 24)                                                | No       |
-
-### libpython Setting
-If you are running a version of Python other than 3.7, you may need to update this value. You probably won't want to touch this unless you encounter problems. Here is how to find that value.
-1. Run `python3-config --libs`.
-2. You'll see something like `-lpython3.7m -lcrypt -lpthread -ldl  -lutil -lm`.
-3. You want the first item listed, excluding the -l. In this example, it would be `python3.7m`.
 
 ### Note on Getting RF Codes
 I've had the best luck with `RFSniffer` from the [433Utils](https://github.com/ninjablocks/433Utils) project. Your mileage may vary.

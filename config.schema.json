@@ -26,12 +26,6 @@
                 "placeholder": 10,
                 "description": "RF code repeat cycles."
             },
-            "libpython": {
-                "title": "libpython Version",
-                "type": "string",
-                "placeholder": "python3.7m",
-                "description": "See readme for more information."
-            },
             "devices": {
                 "title": "Devices",
                 "type": "array",

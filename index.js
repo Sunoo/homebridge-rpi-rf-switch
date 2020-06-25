@@ -1,4 +1,5 @@
 const python = require("node-calls-python").interpreter;
+const process = require("child_process");
 var Accessory, Service, Characteristic, UUIDGen;
 
 module.exports = function(homebridge) {
@@ -16,14 +17,22 @@ function rfSwitchPlatform(log, config, api) {
 
     this.gpio = config.gpio || 17;
     this.repeat = config.repeat || 10;
-    this.libpython = config.libpython || 'python3.7m';
 
-    this.accessories = [];
+    this.libpython = config.libpython;
 
-    this.commandQueue = [];
-    this.transmitting = false;
+    if (this.libpython == null) {
+        var pyconfig = process.execSync('python3-config --libs').toString();
+        var index = pyconfig.indexOf('-lpython');
+        pyconfig = pyconfig.substr(index + 2);
+        index = pyconfig.indexOf(' ');
+        this.libpython = pyconfig.substr(0, index);
+    }
 
     python.fixlink('lib' + this.libpython + '.so');
+
+    this.accessories = [];
+    this.commandQueue = [];
+    this.transmitting = false;
 
     var rpiRf = python.importSync('rpi_rf');
     this.rfDevice = python.createSync(rpiRf, 'RFDevice', this.gpio, 1, null, this.repeat, 24);
