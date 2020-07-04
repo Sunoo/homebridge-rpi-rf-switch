@@ -148,7 +148,7 @@ rfSwitchPlatform.prototype.nextCommand = function() {
     python.call(this.rfDevice, "tx_code", code, accessory.context.protocol,
             accessory.context.pulselength, accessory.context.codelength)
         .then(result => {
-            this.log(accessory.context.name + " is turned " + (state ? "on." : "off."))
+            this.log.debug(accessory.context.name + " is turned " + (state ? "on." : "off."))
             accessory.context.state = state;
 
             if (this.commandQueue.length > 0) {
@@ -166,6 +166,6 @@ rfSwitchPlatform.prototype.nextCommand = function() {
 }
 
 rfSwitchPlatform.prototype.identify = function(thisSwitch, paired, callback) {
-    this.log(thisSwitch.context.name + "identify requested!");
+    this.log(thisSwitch.context.name + " identify requested!");
     callback();
 }
