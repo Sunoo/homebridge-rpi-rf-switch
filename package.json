@@ -14,7 +14,7 @@
     "433Mhz"
   ],
   "author": "David Maher",
-  "license": "ISC",
+  "license": "Apache-2.0",
   "bugs": {
     "url": "https://github.com/Sunoo/homebridge-rpi-rf-switch/issues"
   },
