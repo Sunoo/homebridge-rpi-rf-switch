@@ -1,11 +1,13 @@
 # homebridge-rpi-rf-switch
+
 [![npm](https://img.shields.io/npm/v/homebridge-rpi-rf-switch) ![npm](https://img.shields.io/npm/dt/homebridge-rpi-rf-switch)](https://www.npmjs.com/package/homebridge-rpi-rf-switch)
 
 [rpi-rf](https://pypi.org/project/rpi-rf/) Plugin for [Homebridge](https://github.com/nfarina/homebridge)
 
 This plugin allows you to send 433MHz RF commands via HomeKit. I had no luck getting anything other than rpi-rf to communicate with my hardware. There are other plugins though, try those if this doesn't work for you.
 
-### Installation
+## Installation
+
 1. Install pip using `sudo apt install python3-pip`.
 2. Install rpi-rf using `sudo pip3 install rpi-rf`.
 3. Install Homebridge using the [official instructions](https://github.com/homebridge/homebridge/wiki).
@@ -13,8 +15,10 @@ This plugin allows you to send 433MHz RF commands via HomeKit. I had no luck get
 5. Update your configuration file. See configuration sample below.
 
 ### Configuration
+
 Edit your `config.json` accordingly. Configuration sample:
- ```
+
+```json
 "platforms": [{
     "platform": "rfSwitch",
     "name": "RF Switch",
@@ -45,4 +49,5 @@ Edit your `config.json` accordingly. Configuration sample:
 | \|- codelength     | RF code length. (Default: 24)                                                | No       |
 
 ### Note on Getting RF Codes
+
 I've had the best luck with `RFSniffer` from the [433Utils](https://github.com/ninjablocks/433Utils) project. Your mileage may vary.
