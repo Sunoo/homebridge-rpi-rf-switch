@@ -100,6 +100,7 @@ class RfSwitchPlatform implements DynamicPlatformPlugin {
       accessory = new Accessory(data.name, uuid);
 
       accessory.context = data;
+      accessory.context.serial == serial;
 
       accessory.addService(hap.Service.Switch, data.name);
 
@@ -112,6 +113,7 @@ class RfSwitchPlatform implements DynamicPlatformPlugin {
       this.accessories.push(accessory);
     } else {
       accessory.context = data;
+      accessory.context.serial == serial;
     }
 
     this.getInitState(accessory);
