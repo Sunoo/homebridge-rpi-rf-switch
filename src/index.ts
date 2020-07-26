@@ -104,8 +104,6 @@ class RfSwitchPlatform implements DynamicPlatformPlugin {
 
       accessory.addService(hap.Service.Switch, data.name);
 
-      accessory.reachable = true;
-
       this.setService(accessory);
 
       this.api.registerPlatformAccessories('homebridge-rpi-rf-switch', 'rfSwitch', [accessory]);
