@@ -78,11 +78,8 @@ class RfSwitchPlatform implements DynamicPlatformPlugin {
       serials.push(device.on_code + ':' + device.off_code);
     });
 
-    const badAccessories: Array<PlatformAccessory> = [];
-    this.accessories.forEach(cachedAccessory => {
-      if (!serials.includes(cachedAccessory.context.serial)) {
-        badAccessories.push(cachedAccessory);
-      }
+    const badAccessories = this.accessories.filter((cachedAccessory: PlatformAccessory) => {
+      return !serials.includes(cachedAccessory.context.serial);
     });
     this.removeAccessories(badAccessories);
   }
@@ -99,9 +96,6 @@ class RfSwitchPlatform implements DynamicPlatformPlugin {
       const uuid = hap.uuid.generate(serial);
       accessory = new Accessory(data.name, uuid);
 
-      accessory.context = data;
-      accessory.context.serial == serial;
-
       accessory.addService(hap.Service.Switch, data.name);
 
       this.setService(accessory);
@@ -109,17 +103,23 @@ class RfSwitchPlatform implements DynamicPlatformPlugin {
       this.api.registerPlatformAccessories('homebridge-rpi-rf-switch', 'rfSwitch', [accessory]);
 
       this.accessories.push(accessory);
-    } else {
-      accessory.context = data;
-      accessory.context.serial == serial;
     }
 
-    this.getInitState(accessory);
+    accessory.context = data;
+    accessory.context.serial = serial;
+
+    const accInfo = accessory.getService(hap.Service.AccessoryInformation);
+    if (accInfo) {
+      accInfo
+        .setCharacteristic(hap.Characteristic.Manufacturer, 'Sunoo')
+        .setCharacteristic(hap.Characteristic.Model, 'rpi-rf')
+        .setCharacteristic(hap.Characteristic.SerialNumber, accessory.context.serial);
+    }
   }
 
   removeAccessories(accessories: Array<PlatformAccessory>): void {
     accessories.forEach((accessory: PlatformAccessory) => {
-      this.log(accessory.context.name + ' is removed from HomeBridge.');
+      this.log(accessory.context.name + ' is removed from Homebridge.');
       this.api.unregisterPlatformAccessories('homebridge-rpi-rf-switch', 'rfSwitch', [accessory]);
       this.accessories.splice(this.accessories.indexOf(accessory), 1);
     });
@@ -136,16 +136,6 @@ class RfSwitchPlatform implements DynamicPlatformPlugin {
     accessory.on(PlatformAccessoryEvent.IDENTIFY, () => {
       this.log(accessory.displayName, 'identify requested!');
     });
-  }
-
-  getInitState(accessory: PlatformAccessory): void {
-    const accInfo = accessory.getService(hap.Service.AccessoryInformation);
-    if (accInfo) {
-      accInfo
-        .setCharacteristic(hap.Characteristic.Manufacturer, 'Sunoo')
-        .setCharacteristic(hap.Characteristic.Model, 'rpi-rf')
-        .setCharacteristic(hap.Characteristic.SerialNumber, accessory.context.serial);
-    }
   }
 
   setPowerState(accessory: PlatformAccessory, state: CharacteristicValue, callback: CharacteristicSetCallback): void {
