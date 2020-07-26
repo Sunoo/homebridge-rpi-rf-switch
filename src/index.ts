@@ -12,6 +12,7 @@ import {
 } from 'homebridge';
 const python = require('node-calls-python').interpreter; // eslint-disable-line @typescript-eslint/no-var-requires
 import process from 'child_process';
+import { DeviceConfig, RfSwitchPlatformConfig } from './configTypes';
 
 let hap: HAP;
 let Accessory: typeof PlatformAccessory;
@@ -19,44 +20,47 @@ let Accessory: typeof PlatformAccessory;
 const PLUGIN_NAME = 'homebridge-rpi-rf-switch';
 const PLATFORM_NAME = 'rfSwitch';
 
+type Command = {
+  accessory: PlatformAccessory,
+  state: CharacteristicValue,
+  callback: CharacteristicSetCallback
+};
+
 class RfSwitchPlatform implements DynamicPlatformPlugin {
   private readonly log: Logging;
   private readonly api: API;
-  private readonly config: PlatformConfig;
-  private readonly gpio: number;
-  private readonly repeat: number;
-  private readonly libpython: string;
+  private readonly config: RfSwitchPlatformConfig;
   private readonly accessories: Array<PlatformAccessory>;
-  private readonly commandQueue: Array<any>;
-  private readonly rfDevice: any;
+  private readonly commandQueue: Array<Command>;
+  private readonly rfDevice: any; // eslint-disable-line @typescript-eslint/no-explicit-any
   private transmitting: boolean;
 
   constructor(log: Logging, config: PlatformConfig, api: API) {
     this.log = log;
-    this.config = config;
+    this.config = config as unknown as RfSwitchPlatformConfig;
     this.api = api;
-
-    this.gpio = config.gpio || 17;
-    this.repeat = config.repeat || 10;
-
-    this.libpython = config.libpython;
-
-    if (this.libpython == null) {
-      let pyconfig = process.execSync('python3-config --libs').toString();
-      let index = pyconfig.indexOf('-lpython');
-      pyconfig = pyconfig.substr(index + 2);
-      index = pyconfig.indexOf(' ');
-      this.libpython = pyconfig.substr(0, index);
-    }
-
-    python.fixlink('lib' + this.libpython + '.so');
 
     this.accessories = [];
     this.commandQueue = [];
     this.transmitting = false;
 
+    let libpython = config.libpython;
+
+    if (!libpython) {
+      let pyconfig = process.execSync('python3-config --libs').toString();
+      let index = pyconfig.indexOf('-lpython');
+      pyconfig = pyconfig.substr(index + 2);
+      index = pyconfig.indexOf(' ');
+      libpython = pyconfig.substr(0, index);
+    }
+
+    python.fixlink('lib' + libpython + '.so');
+
+    const gpio = config.gpio || 17;
+    const repeat = config.repeat || 10;
+
     const rpiRf = python.importSync('rpi_rf');
-    this.rfDevice = python.createSync(rpiRf, 'RFDevice', this.gpio, 1, null, this.repeat, 24);
+    this.rfDevice = python.createSync(rpiRf, 'RFDevice', gpio, 1, null, repeat, 24);
     python.callSync(this.rfDevice, 'enable_tx');
 
     api.on(APIEvent.DID_FINISH_LAUNCHING, this.didFinishLaunching.bind(this));
@@ -69,7 +73,7 @@ class RfSwitchPlatform implements DynamicPlatformPlugin {
 
   didFinishLaunching(): void {
     const serials: Array<string> = [];
-    this.config.devices.forEach((device: any) => {
+    this.config.devices.forEach((device: DeviceConfig) => {
       this.addAccessory(device);
       serials.push(device.on_code + ':' + device.off_code);
     });
@@ -83,16 +87,16 @@ class RfSwitchPlatform implements DynamicPlatformPlugin {
     this.removeAccessories(badAccessories);
   }
 
-  addAccessory(data: any): void {
+  addAccessory(data: DeviceConfig): void {
     this.log('Initializing platform accessory \'' + data.name + '\'...');
-    data.serial = data.on_code + ':' + data.off_code;
+    const serial = data.on_code + ':' + data.off_code;
 
     let accessory = this.accessories.find(cachedAccessory => {
-      return cachedAccessory.context.serial == data.serial;
+      return cachedAccessory.context.serial == serial;
     });
 
     if (!accessory) {
-      const uuid = hap.uuid.generate(data.serial);
+      const uuid = hap.uuid.generate(serial);
       accessory = new Accessory(data.name, uuid);
 
       accessory.context = data;
@@ -158,17 +162,17 @@ class RfSwitchPlatform implements DynamicPlatformPlugin {
 
   nextCommand(): void {
     const todoItem = this.commandQueue.shift();
-    const accessory = todoItem['accessory'];
-    const state = todoItem['state'];
-    const callback = todoItem['callback'];
+    if (!todoItem) {
+      return;
+    }
 
-    const code = state ? accessory.context.on_code : accessory.context.off_code;
+    const code = todoItem.state ? todoItem.accessory.context.on_code : todoItem.accessory.context.off_code;
 
-    python.call(this.rfDevice, 'tx_code', code, accessory.context.protocol,
-      accessory.context.pulselength, accessory.context.codelength)
+    python.call(this.rfDevice, 'tx_code', code, todoItem.accessory.context.protocol,
+      todoItem.accessory.context.pulselength, todoItem.accessory.context.codelength)
       .then((): void => {
-        this.log.debug(accessory.context.name + ' is turned ' + (state ? 'on.' : 'off.'));
-        accessory.context.state = state;
+        this.log.debug(todoItem.accessory.context.name + ' is turned ' + (todoItem.state ? 'on.' : 'off.'));
+        todoItem.accessory.context.state = todoItem.state;
 
         if (this.commandQueue.length > 0) {
           this.nextCommand.bind(this)();
@@ -176,10 +180,10 @@ class RfSwitchPlatform implements DynamicPlatformPlugin {
           this.transmitting = false;
         }
 
-        callback();
+        todoItem.callback();
       })
       .catch((error: Error) => {
-        this.log('Failed to turn ' + (state ? 'on ' : 'off ') + accessory.context.name);
+        this.log('Failed to turn ' + (todoItem.state ? 'on ' : 'off ') + todoItem.accessory.context.name);
         this.log(error.message);
       });
   }

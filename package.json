@@ -1,7 +1,7 @@
 {
   "displayName": "Homebridge rpi-rf Switch",
   "name": "homebridge-rpi-rf-switch",
-  "version": "2.1.4",
+  "version": "2.2.0",
   "description": "rpi-rf plugin for Homebridge",
   "main": "dist/index.js",
   "repository": {
@@ -24,8 +24,8 @@
     "clean": "rimraf ./dist ./coverage",
     "build": "rimraf ./dist ./coverage && tsc",
     "format": "markdownlint --fix *.md",
-    "lint": "eslint **/*.ts --fix",
-    "lint-check": "eslint **/*.ts",
+    "lint": "eslint src/*.ts --fix",
+    "lint-check": "eslint src/*.ts",
     "prepare": "npm run build",
     "prepublishOnly": "npm run lint-check",
     "postpublish": "npm run clean",
@@ -41,9 +41,16 @@
     "rimraf": "^3.0.2",
     "typescript": "^3.9.7"
   },
+  "files": [
+    "config.schema.json",
+    "dist/**/*",
+    "LICENSE",
+    "package.json",
+    "README.md"
+  ],
   "engines": {
-    "node": ">=0.12.0",
-    "homebridge": ">=0.3.0"
+    "node": ">=10",
+    "homebridge": ">=1.0.0"
   },
   "dependencies": {
     "node-calls-python": ">=1.4.0"
