@@ -32,7 +32,7 @@ class RfSwitchPlatform implements DynamicPlatformPlugin {
   private readonly config: RfSwitchPlatformConfig;
   private readonly accessories: Array<PlatformAccessory>;
   private readonly commandQueue: Array<Command>;
-  private readonly rfDevice: any; // eslint-disable-line @typescript-eslint/no-explicit-any
+  private readonly rfDevice: string;
   private transmitting: boolean;
 
   constructor(log: Logging, config: PlatformConfig, api: API) {
@@ -59,7 +59,7 @@ class RfSwitchPlatform implements DynamicPlatformPlugin {
     const gpio = config.gpio || 17;
     const repeat = config.repeat || 10;
 
-    const rpiRf = python.importSync('rpi_rf');
+    const rpiRf: string = python.importSync('rpi_rf');
     this.rfDevice = python.createSync(rpiRf, 'RFDevice', gpio, 1, null, repeat, 24);
     python.callSync(this.rfDevice, 'enable_tx');
 
@@ -173,7 +173,7 @@ class RfSwitchPlatform implements DynamicPlatformPlugin {
         todoItem.callback();
       })
       .catch((error: Error) => {
-        this.log('Failed to turn ' + (todoItem.state ? 'on ' : 'off ') + todoItem.accessory.context.name);
+        this.log('Failed to turn ' + (todoItem.state ? 'on ' : 'off ') + todoItem.accessory.displayName);
         this.log(error.message);
       });
   }
