@@ -1,7 +1,7 @@
 {
   "displayName": "Homebridge rpi-rf Switch",
   "name": "homebridge-rpi-rf-switch",
-  "version": "2.2.0",
+  "version": "2.2.1",
   "description": "rpi-rf plugin for Homebridge",
   "main": "dist/index.js",
   "repository": {
