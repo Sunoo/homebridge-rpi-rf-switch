@@ -6,13 +6,18 @@
 
 This plugin allows you to send 433MHz RF commands via HomeKit. I had no luck getting anything other than rpi-rf to communicate with my hardware. There are other plugins though, try those if this doesn't work for you.
 
+## Manual Pre Install Steps
+
+The included preinstall script should handle these for you, they are included for completeness.
+
+1. Install pip using `sudo apt install python3-dev python3-pip`.
+2. Install rpi-rf using `sudo pip3 install rpi-rf`.
+
 ## Installation
 
-1. Install pip using `sudo apt install python3-pip`.
-2. Install rpi-rf using `sudo pip3 install rpi-rf`.
-3. Install Homebridge using the [official instructions](https://github.com/homebridge/homebridge/wiki).
-4. Install this plugin using `sudo npm install -g homebridge-rpi-rf-switch --unsafe-perm`.
-5. Update your configuration file. See configuration sample below.
+1. Install Homebridge using the [official instructions](https://github.com/homebridge/homebridge/wiki).
+2. Install this plugin using `sudo npm install -g homebridge-rpi-rf-switch --unsafe-perm`.
+3. Update your configuration file. See configuration sample below.
 
 ### Configuration
 
