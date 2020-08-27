@@ -63,8 +63,8 @@ class RfSwitchPlatform implements DynamicPlatformPlugin {
     try {
       this.rfDevice = python.createSync(rpiRf, 'RFDevice', gpio, 1, null, repeat, 24);
     } catch (ex) {
-      this.log.error('Error starting rpi-rf. Please make sure it you\'ve followed the ' +
-        'installation instructions on the project\'s page. ' + ex);
+      this.log.error('Error starting rpi-rf, please make sure you\'ve followed the ' +
+        'installation instructions in this project\'s readme: ' + ex);
       return;
     }
     python.callSync(this.rfDevice, 'enable_tx');

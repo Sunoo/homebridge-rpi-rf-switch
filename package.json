@@ -26,7 +26,6 @@
     "format": "markdownlint --fix *.md",
     "lint": "eslint src/*.ts --fix",
     "lint-check": "eslint src/*.ts",
-    "preinstall": "node preinstall.js",
     "prepare": "npm run build",
     "prepublishOnly": "npm run lint-check",
     "postpublish": "npm run clean",
