@@ -1,6 +1,6 @@
 # homebridge-rpi-rf-switch
 
-[![npm](https://img.shields.io/npm/v/homebridge-rpi-rf-switch) ![npm](https://img.shields.io/npm/dt/homebridge-rpi-rf-switch)](https://www.npmjs.com/package/homebridge-rpi-rf-switch)
+[![npm](https://img.shields.io/npm/v/homebridge-rpi-rf-switch) ![npm](https://img.shields.io/npm/dt/homebridge-rpi-rf-switch)](https://www.npmjs.com/package/homebridge-rpi-rf-switch) [![verified-by-homebridge](https://badgen.net/badge/homebridge/verified/purple)](https://github.com/homebridge/homebridge/wiki/Verified-Plugins)
 
 [rpi-rf](https://pypi.org/project/rpi-rf/) Plugin for [Homebridge](https://github.com/nfarina/homebridge)
 

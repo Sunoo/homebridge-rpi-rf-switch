@@ -1,7 +1,7 @@
 {
   "displayName": "Homebridge rpi-rf Switch",
   "name": "homebridge-rpi-rf-switch",
-  "version": "2.2.1",
+  "version": "2.2.2",
   "description": "rpi-rf plugin for Homebridge",
   "main": "dist/index.js",
   "repository": {
@@ -16,6 +16,24 @@
   ],
   "author": "David Maher",
   "license": "Apache-2.0",
+  "funding": [
+    {
+      "type": "kofi",
+      "url": "https://ko-fi.com/sunookitsune"
+    },
+    {
+      "type": "paypal",
+      "url": "https://paypal.me/sunoo"
+    },
+    {
+      "type": "github",
+      "url": "https://github.com/Sunoo"
+    },
+    {
+      "type": "liberapay",
+      "url": "https://liberapay.com/Sunoo"
+    }
+  ],
   "bugs": {
     "url": "https://github.com/Sunoo/homebridge-rpi-rf-switch/issues"
   },
