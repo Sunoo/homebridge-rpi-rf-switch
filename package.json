@@ -1,7 +1,7 @@
 {
   "displayName": "Homebridge rpi-rf Switch",
   "name": "homebridge-rpi-rf-switch",
-  "version": "2.2.2",
+  "version": "2.2.3",
   "description": "rpi-rf plugin for Homebridge",
   "main": "dist/index.js",
   "repository": {
@@ -39,9 +39,8 @@
   },
   "homepage": "https://github.com/Sunoo/homebridge-rpi-rf-switch#readme",
   "scripts": {
-    "clean": "rimraf ./dist ./coverage",
-    "build": "rimraf ./dist ./coverage && tsc",
-    "format": "markdownlint --fix *.md",
+    "clean": "rimraf ./dist",
+    "build": "rimraf ./dist && tsc",
     "lint": "eslint src/*.ts --fix",
     "lint-check": "eslint src/*.ts",
     "prepare": "npm run build",
@@ -50,14 +49,13 @@
     "watch": "npm run clean && tsc --watch"
   },
   "devDependencies": {
-    "@typescript-eslint/eslint-plugin": "^4.0.0",
-    "@typescript-eslint/parser": "^3.7.0",
-    "@types/node": "14.14.25",
-    "eslint": "^7.5.0",
-    "homebridge": "^1.1.1",
-    "markdownlint-cli": "^0.26.0",
+    "@types/node": "^14.14.28",
+    "@typescript-eslint/eslint-plugin": "^4.15.1",
+    "@typescript-eslint/parser": "^4.15.1",
+    "eslint": "^7.20.0",
+    "homebridge": "^1.1.7",
     "rimraf": "^3.0.2",
-    "typescript": "^4.0.2"
+    "typescript": "^4.1.5"
   },
   "files": [
     "preinstall.js",
@@ -72,6 +70,6 @@
     "homebridge": ">=1.0.0"
   },
   "dependencies": {
-    "node-calls-python": ">=1.4.0"
+    "node-calls-python": "^1.4.0"
   }
 }

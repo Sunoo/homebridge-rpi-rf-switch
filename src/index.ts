@@ -37,7 +37,7 @@ class RfSwitchPlatform implements DynamicPlatformPlugin {
 
   constructor(log: Logging, config: PlatformConfig, api: API) {
     this.log = log;
-    this.config = config as unknown as RfSwitchPlatformConfig;
+    this.config = config as RfSwitchPlatformConfig;
     this.api = api;
 
     this.accessories = [];
@@ -79,10 +79,20 @@ class RfSwitchPlatform implements DynamicPlatformPlugin {
 
   didFinishLaunching(): void {
     const serials: Array<string> = [];
-    this.config.devices.forEach((device: DeviceConfig) => {
-      this.addAccessory(device);
-      serials.push(device.on_code + ':' + device.off_code);
-    });
+    if (this.config.devices) {
+      this.config.devices.forEach((device: DeviceConfig) => {
+        if (!device.name) {
+          this.log.error('One of your devices has no name configured. This instance will be skipped.');
+        } else if (!device.on_code) {
+          this.log.error('One of your devices has no on_code configured. This instance will be skipped.');
+        } else if (!device.off_code) {
+          this.log.error('One of your devices has no off_code configured. This instance will be skipped.');
+        } else {
+          this.addAccessory(device);
+          serials.push(device.on_code + ':' + device.off_code);
+        }
+      });
+    }
 
     const badAccessories = this.accessories.filter((cachedAccessory: PlatformAccessory) => {
       return !serials.includes(cachedAccessory.context.serial);
@@ -100,7 +110,7 @@ class RfSwitchPlatform implements DynamicPlatformPlugin {
 
     if (!accessory) {
       const uuid = hap.uuid.generate(serial);
-      accessory = new Accessory(data.name, uuid);
+      accessory = new Accessory(data.name!, uuid);
 
       accessory.addService(hap.Service.Switch, data.name);
 
